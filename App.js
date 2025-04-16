@@ -1,20 +1,24 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import "react-native-gesture-handler";
+import "react-native-reanimated";
+import App from "./src";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+export default App;
+// import { AppRegistry } from "react-native";
+// import { name as appName } from "./app.json";
+// import React from "react";
+// import { AuthProvider } from "./src/api/authContext";
+// import { AxiosProvider } from "./src/api/providerContext";
+// import App from "./src";
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+// const Root = () => {
+//   return (
+//     <AuthProvider>
+//       <AxiosProvider>
+//         <App />
+//       </AxiosProvider>
+//     </AuthProvider>
+//   );
+// };
+// AppRegistry.registerComponent(appName, () => Root);
+
+// export default Root;
