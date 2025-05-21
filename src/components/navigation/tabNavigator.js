@@ -52,7 +52,7 @@ const BottomTabNavigator = () => {
         }}
       /> */}
       <Tab.Screen
-        name="Đặt chỗ"
+        name="Đặt phòng"
         component={seatBooking}
         options={{
           header: ({ navigation }) => (
@@ -102,7 +102,7 @@ const BottomTabNavigator = () => {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Quét mã"
         component={Scanner}
         options={{
@@ -114,8 +114,8 @@ const BottomTabNavigator = () => {
             />
           ),
         }}
-      />
-      {/* <Tab.Screen
+      /> */}
+      <Tab.Screen
         name="Hạng"
         component={rank}
         options={{
@@ -127,7 +127,7 @@ const BottomTabNavigator = () => {
             />
           ),
         }}
-      /> */}
+      />
       <Tab.Screen
         name="Khác"
         component={others}

@@ -25,15 +25,15 @@ const sections = [
     title: "Tài khoản",
     data: [
       { icon: "person", title: "Thông tin cá nhân" },
-      { icon: "feedback", title: "Gửi góp ý về ứng dụng" },
+      // { icon: "feedback", title: "Gửi góp ý về ứng dụng" },
       { icon: "receipt", title: "Đơn hàng của tôi" },
       { icon: "logout", title: "Đăng xuất" },
     ],
   },
-  {
-    title: "Khác",
-    data: [{ icon: "local-offer", title: "Khuyến mãi và tuyển dụng" }],
-  },
+  // {
+  //   title: "Khác",
+  //   data: [{ icon: "local-offer", title: "Khuyến mãi và tuyển dụng" }],
+  // },
 ];
 
 export default Others = function ({ navigation }) {

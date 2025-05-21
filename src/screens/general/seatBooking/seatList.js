@@ -22,11 +22,12 @@ import Feather from "react-native-vector-icons/Feather";
 import GeneralButton from "../../../components/button/generalButton";
 import useBranchDetail from "../../../hooks/useBranchDetail";
 import useRoomsByBranch from "../../../hooks/useRoomsByBranch";
+import useRoomsByBranchIdAndRoomTypeId from "../../../hooks/room/useRoomsByBranchIdAndRoomTypeId";
 
 const { width, height } = Dimensions.get("screen");
 
 export default SeatList = function ({ route, navigation }) {
-  const { branchId } = route.params;
+  const { branchId, roomTypeId } = route.params;
 
   //* Lấy dữ liệu chi nhánh
   const {
@@ -35,12 +36,14 @@ export default SeatList = function ({ route, navigation }) {
     error: branchError,
   } = useBranchDetail(branchId);
 
-  //* Lấy dữ liệu phòng theo chi nhánh
+  //* Lấy dữ liệu phòng theo chi nhánh và loại phòng
   const {
     data: rooms,
     isLoading: isRoomsLoading,
     error: roomsError,
-  } = useRoomsByBranch(branchId);
+  } = roomTypeId
+    ? useRoomsByBranchIdAndRoomTypeId(branchId, roomTypeId)
+    : useRoomsByBranch(branchId);
 
   //* Nếu đang tải dữ liệu, hiển thị loading
   if (isBranchLoading || isRoomsLoading) {

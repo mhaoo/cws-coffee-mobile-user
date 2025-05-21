@@ -205,11 +205,11 @@ export default Login = function ({ navigation }) {
             onPress={handleRegisterPress}
           />
         </View>
-        <View style={styles.horizontalLineContainer}>
+        {/* <View style={styles.horizontalLineContainer}>
           <View style={styles.horizontalLine}></View>
           <Text style={styles.orText}>HOẶC</Text>
           <View style={styles.horizontalLine}></View>
-        </View>
+        </View> */}
         {/* <Button title="Tiep tuc bang Facebook"></Button>
         <Button title="Tiep tuc bang Google"></Button> */}
       </View>

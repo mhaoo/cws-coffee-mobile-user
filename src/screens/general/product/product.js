@@ -16,7 +16,7 @@ import Feather from "react-native-vector-icons/Feather";
 
 // Hooks
 import usePublicGroupsByCategoryId from "../../../hooks/publicProducts/usePublicGroupsByCategoryId";
-import usePublicProductsByCategoryName from "../../../hooks/publicProducts/usePublicProductsByCategoryName";
+import usePublicProductsByCategoryId from "../../../hooks/publicProducts/usePublicProductsByCategoryId";
 
 // ID & NAME Constants
 const FOOD_CATEGORY_ID = 1;
@@ -26,7 +26,9 @@ const DRINK_NAME = "DRINK";
 
 const { width, height } = Dimensions.get("screen");
 
-export default function Product({ navigation }) {
+export default function Product({ navigation, route }) {
+  // Receive booking context if navigated from BookingDetail
+  const { booking, orderId } = route.params || {};
   // 1) Gọi hooks lấy "groups" (FOOD=1, DRINK=2)
   const {
     data: foodGroups,
@@ -45,13 +47,13 @@ export default function Product({ navigation }) {
     data: foodProducts,
     isLoading: isLoadingFoodProd,
     error: foodProdErr,
-  } = usePublicProductsByCategoryName(FOOD_NAME);
+  } = usePublicProductsByCategoryId(FOOD_CATEGORY_ID);
 
   const {
     data: drinkProducts,
     isLoading: isLoadingDrinkProd,
     error: drinkProdErr,
-  } = usePublicProductsByCategoryName(DRINK_NAME);
+  } = usePublicProductsByCategoryId(DRINK_CATEGORY_ID);
 
   // 3) Kiểm tra trạng thái loading
   if (
@@ -180,7 +182,12 @@ export default function Product({ navigation }) {
 
   // Handle user nhấn vào 1 product
   const handleProductPress = (product) => {
-    navigation.navigate("ProductDetail", { productId: product.id });
+    // Navigate to detail, passing booking context when available
+    navigation.navigate("ProductDetail", {
+      productId: product.id,
+      booking,
+      orderId,
+    });
   };
 
   // ============== UI ==============

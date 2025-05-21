@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import WeekView from "react-native-week-view";
+import { Calendar as BigCalendar } from "react-native-big-calendar";
 import GeneralButton from "../../../components/button/generalButton";
 import useAvailableSlots from "../../../hooks/useAvailableSlots";
 import useBookSeat from "../../../hooks/useBookSeat";
@@ -432,36 +432,28 @@ export default SeatBookingDetail = function ({ route, navigation }) {
       {/* Hiển thị lịch các slot đã đặt trước */}
       <View style={styles.weekViewContainer}>
         <Text style={styles.subHeader}>Lịch đặt chỗ</Text>
-        <WeekView
+        <BigCalendar
           events={
-            availableSlots?.availableSlots
-              ?.map((slot) => {
-                const startDate = new Date(
-                  `${formattedDate}T${slot.startTime}`
-                );
-                const endDate = new Date(`${formattedDate}T${slot.endTime}`);
-
-                return {
-                  id: slot.id || Math.random().toString(),
-                  description: slot.status === "Valid" ? "Khả dụng" : "Đã đặt",
-                  startDate,
-                  endDate,
-                  color: slot.status === "Valid" ? "#4CAF50" : "#D32F2F", // Xanh lá cây nếu còn trống, đỏ nếu đã đặt
-                };
-              })
-              .filter(Boolean) || []
+            availableSlots?.availableSlots.map((slot) => {
+              const start = new Date(`${formattedDate}T${slot.startTime}`);
+              const end = new Date(`${formattedDate}T${slot.endTime}`);
+              return {
+                id: slot.id || Math.random().toString(),
+                title: slot.status === "Valid" ? "Khả dụng" : "Đã đặt",
+                start,
+                end,
+                color: slot.status === "Valid" ? "#4CAF50" : "#D32F2F",
+              };
+            }) || []
           }
-          selectedDate={currentDate}
-          numberOfDays={4}
-          hoursInDisplay={14}
-          timeStep={30}
-          formatDateHeader="ddd"
-          startHour={8}
-          endHour={22}
-          onEventPress={(event) =>
+          height={400}
+          mode="week"
+          date={currentDate}
+          swipeEnabled={true}
+          onPressEvent={(event) =>
             Alert.alert(
               "Thông báo",
-              event.description === "Khả dụng"
+              event.title === "Khả dụng"
                 ? "Khung giờ này còn trống."
                 : "Khung giờ này đã được đặt."
             )

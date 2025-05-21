@@ -30,9 +30,9 @@ const authApi = {
   refreshAccessToken: (refreshToken) =>
     apiClient.post("/api/auth/refresh-token", { refreshToken }),
 
-  getBranches: () => apiClient.get("/api/customer/branches"),
+  getBranches: () => apiClient.get("/api/public/branch/all"),
 
-  getBranchDetail: (id) => apiClient.get(`/api/customer/branches/${id}`),
+  getBranchDetail: (id) => apiClient.get(`/api/public/branch/${id}`),
 
   getRoomsByBranchId: (branchId) =>
     apiClient.get(`/api/customer/rooms/${branchId}`),
@@ -59,16 +59,6 @@ const authApi = {
   //   apiClient.post(`/api/customer/bookings/${roomId}`, bookingData, {
   //     headers: { Authorization: `Bearer ${accessToken}` },
   //   }),
-
-  //* API tạo payment intent
-  createPaymentIntentBooking: (amount, bookingId) =>
-    apiClient.post("/api/payments/create-payment-intent-booking", {
-      amount,
-      bookingId,
-    }),
-
-  getBookingsDetailById: (id) =>
-    apiClient.get(`/api/customer/bookings/details/${id}`), //TODO lấy thông tin đơn đặt chỗ bằng id đơn hàng
 
   getPublicProducts: () => apiClient.get("/api/public/products"), //TODO lấy danh sách tất cả các sản phẩm
 
@@ -116,5 +106,56 @@ const authApi = {
 
   getPublicProductGroupsByGroupId: (groupId) =>
     apiClient.get(`/api/public/products/groups/${groupId}`), //TODO lấy danh sách các sản phẩm theo từng nhóm sản phẩm (groupId)
+
+  //! NOTIFICATION
+  //* API lấy tất cả thông báo
+  getNotifications: () => apiClient.get(`/api/customer/notifications`),
+
+  //* API lấy thông tin chi tiết từng thông báo
+  getNotificationDetailById: (id) =>
+    apiClient.get(`/api/customer/notifications/details/${id}`),
+
+  //! ROOM
+  //* API lấy các loại roomType
+  getRoomType: () => apiClient.get(`/api/customer/room-type/all`),
+
+  //* API lấy danh sách các phòng theo BranchId và RoomTypeId
+  getRoomsByBranchIdAndRoomTypeId: (branchId, roomTypeId) =>
+    apiClient.get(`/api/public/rooms-with-type/b/${branchId}/rt/${roomTypeId}`),
+
+  //!BOOKING
+  //* API lấy các đơn Booking của user
+  getUserBooking: () => apiClient.get(`/api/customer/bookings/user-bookings`),
+
+  //* API lấy thông tin đơn đặt chỗ bằng id
+  getBookingsDetailById: (id) =>
+    apiClient.get(`/api/customer/bookings/details/${id}`),
+
+  //!ORDER
+  //* API lấy danh sách các đơn Order của đơn Booking theo BookingId
+  getOrdersByBookingId: (bookingId) =>
+    apiClient.get(`/api/customer/orders/by-booking/${bookingId}`, {
+      params: { bookingId },
+    }),
+
+  //* API lấy thông tin chi tiết của đơn Order theo id
+  getOrderDetailsById: (id) =>
+    apiClient.get(`/api/customer/orders/details/${id}`),
+
+  //* API thêm các sản phẩm vào đơn Order
+  addItemToOrder: (bookingId, item) =>
+    apiClient.post(`/api/customer/orders/add-item`, { bookingId, item }),
+
+  //* API xóa các sản phẩm khỏi đơn Order
+  deleteItemToOrder: (itemId) =>
+    apiClient.delete(`/api/customer/orders/delete-item/${itemId}`),
+
+  //!PAYMENT
+  //* API tạo payment intent
+  createPaymentIntentBooking: (amount, bookingId) =>
+    apiClient.post("/api/payments/create-payment-intent-booking", {
+      amount,
+      bookingId,
+    }),
 };
 export default authApi;

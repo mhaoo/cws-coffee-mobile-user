@@ -69,9 +69,7 @@ export default SeatBooking = function ({ navigation }) {
         <View style={styles.imageContainer}>
           <Image
             source={{
-              uri:
-                // item.images[0] ||
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0lat9Ryng1UhE-3c5u7O-ZFCVXYGoANxWrw&s",
+              uri: item.images[0],
             }}
             style={styles.image}
           />
@@ -79,6 +77,7 @@ export default SeatBooking = function ({ navigation }) {
         <View style={styles.storeDetail}>
           <Text style={styles.basicName}>CWS COFFEE</Text>
           <Text style={styles.branchName}>{item.name}</Text>
+          <Text style={styles.branchAddress}>Địa chỉ: {item.address}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -150,5 +149,10 @@ const styles = StyleSheet.create({
   },
   branchName: {
     fontSize: 16,
+  },
+  branchAddress: {
+    fontSize: 13,
+    fontStyle: "italic",
+    color: "#777",
   },
 });

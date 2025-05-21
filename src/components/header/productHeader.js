@@ -11,14 +11,21 @@ import {
   PixelRatio,
 } from "react-native";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import { useRoute } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get("screen").width;
 const headerHeightAndroid = PixelRatio.getPixelSizeForLayoutSize(36);
 const headerHeightIOS = PixelRatio.getPixelSizeForLayoutSize(36);
 
 export default ProductHeader = function ({ navigation }) {
+  const route = useRoute();
   const handleCardPress = () => {
-    navigation.navigate("Giỏ hàng");
+    // Propagate booking param if exists
+    if (route.params?.booking) {
+      navigation.navigate("Giỏ hàng", { booking: route.params.booking });
+    } else {
+      navigation.navigate("Giỏ hàng");
+    }
   };
 
   return (

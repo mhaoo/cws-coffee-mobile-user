@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,28 +13,38 @@ import {
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 import DropDownPicker from "react-native-dropdown-picker";
+import useRoomTypes from "../../hooks/room/useRoomTypes";
 
 const screenWidth = Dimensions.get("screen").width;
 const headerHeightAndroid = PixelRatio.getPixelSizeForLayoutSize(36);
 const headerHeightIOS = PixelRatio.getPixelSizeForLayoutSize(36);
 
-export default SeatListHeader = function ({ navigation }) {
+export default SeatListHeader = function ({ navigation, route }) {
   const [open, setOpen] = useState(false);
-  const [selectedValue, setSelectedValue] = useState("");
+  const [selectedValue, setSelectedValue] = useState(null);
   const [items, setItems] = useState([]);
   const [selectedRoomName, setSelectedRoomName] = useState("");
 
-  const handleDropdownChange = (value) => {
-    const selectedRoomId =
-      typeof value === "function" ? value(selectedValue) : value;
-    setSelectedValue(selectedRoomId);
+  const { data: roomTypes = [], isLoading: typesLoading, error: typesError } = useRoomTypes();
+  const branchId = route.params?.branchId;
 
-    const selectedRoom = items.find((item) => item.value === selectedRoomId);
-    if (selectedRoom) {
-      setSelectedRoomName(selectedRoom.label);
+  // Populate dropdown items when roomTypes fetched
+  useEffect(() => {
+    if (roomTypes && roomTypes.length > 0) {
+      const mapped = roomTypes.map((rt) => ({ label: rt.name, value: rt.id }));
+      setItems(mapped);
+      // Optionally select first by default
+      if (!selectedValue) {
+        setSelectedValue(mapped[0].value);
+        navigation.setParams({ branchId, roomTypeId: mapped[0].value });
+      }
     }
+  }, [roomTypes]);
 
-    onSelectRoom(selectedRoomId);
+  const handleDropdownChange = (value) => {
+    const selected = typeof value === "function" ? value(selectedValue) : value;
+    setSelectedValue(selected);
+    navigation.setParams({ branchId, roomTypeId: selected });
   };
 
   return (
@@ -49,7 +59,7 @@ export default SeatListHeader = function ({ navigation }) {
         setOpen={setOpen}
         setValue={handleDropdownChange}
         setItems={setItems}
-        placeholder="Loại phòng:"
+        placeholder={typesLoading ? "Đang tải..." : "Chọn loại phòng"}
         style={{
           borderRadius: 8,
           borderWidth: 2,
@@ -67,9 +77,11 @@ export default SeatListHeader = function ({ navigation }) {
         }}
         labelStyle={{
           paddingLeft: 5,
-          fontSize: 20,
+          fontSize: 14,
           color: "black",
         }}
+        textStyle={{ fontSize: 14, color: "black" }}
+        placeholderStyle={{ fontSize: 14, color: "#A8A8A8" }}
         arrowIconStyle={{
           tintColor: "#93540A",
         }}

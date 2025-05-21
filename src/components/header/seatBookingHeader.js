@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
+  ScrollView,
   StyleSheet,
   Dimensions,
   TouchableOpacity,
@@ -11,7 +12,10 @@ import {
   PixelRatio,
   TextInput,
 } from "react-native";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import { useQueries } from "@tanstack/react-query";
+import useNotifications from "../../hooks/notification/useNotifications";
+import authApi from "../../api/authApi";
+import Fontisto from "react-native-vector-icons/Fontisto";
 import Feather from "react-native-vector-icons/Feather";
 
 const screenWidth = Dimensions.get("screen").width;
@@ -19,21 +23,72 @@ const headerHeightAndroid = PixelRatio.getPixelSizeForLayoutSize(64);
 const headerHeightIOS = PixelRatio.getPixelSizeForLayoutSize(64);
 
 export default SeatBookingHeader = function ({ navigation }) {
+  // State to show/hide notifications dropdown
+  const [showDropdown, setShowDropdown] = useState(false);
   const handleNotificationPress = () => {
-    navigation.navigate("Giỏ hàng");
+    setShowDropdown((prev) => !prev);
   };
+  // Fetch list of notifications
+  const { data: notifications = [], isLoading: notifsLoading } =
+    useNotifications();
+  // Fetch details for each notification when dropdown is open
+  const detailQueries = useQueries({
+    queries: showDropdown
+      ? notifications.map((n) => ({
+          queryKey: ["notificationDetail", n.id],
+          queryFn: async () => {
+            const res = await authApi.getNotificationDetailById(n.id);
+            return res.data;
+          },
+          enabled: showDropdown,
+          staleTime: 1000 * 60 * 5,
+        }))
+      : [],
+  });
 
   return (
     <SafeAreaView style={styles.headerContainer}>
       <View style={styles.upperHeader}>
-        <Text style={styles.headerText}>Đặt chỗ</Text>
+        <Text style={styles.headerText}>Đặt phòng</Text>
         <TouchableOpacity
           onPress={handleNotificationPress}
           style={styles.notificationContainer}
         >
-          <FontAwesome5 name="bell" size={24} style={styles.icon} />
+          <Fontisto name="bell" size={24} style={styles.icon} />
         </TouchableOpacity>
       </View>
+      {/* Dropdown list of notification details */}
+      {showDropdown && (
+        <View style={styles.dropdownContainer}>
+          {notifsLoading && <Text>Đang tải thông báo...</Text>}
+          {!notifsLoading && (
+            <ScrollView
+              style={styles.dropdownScroll}
+              nestedScrollEnabled={true}
+              showsVerticalScrollIndicator
+            >
+              {detailQueries.map((q, idx) => {
+                const notif = notifications[idx];
+                if (q.isLoading)
+                  return <Text key={notif.id}>Đang tải chi tiết...</Text>;
+                if (q.error) return <Text key={notif.id}>Lỗi tải</Text>;
+                const { title, content, createdAt } = q.data;
+                return (
+                  <View key={notif.id} style={styles.dropdownItem}>
+                    <Text style={styles.notifTitle}>{title}</Text>
+                    <Text style={styles.notifContent}>
+                      {content.replace(/<br\s*\/?>(?:\s*)/gi, "\n")}
+                    </Text>
+                    <Text style={styles.notifTime}>
+                      {new Date(createdAt).toLocaleString()}
+                    </Text>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
+      )}
       <View style={styles.lowerHeader}>
         <View style={styles.searchContainer}>
           <View style={styles.searchIconContainer}>
@@ -54,6 +109,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7B75740",
     height: Platform.OS === "android" ? headerHeightAndroid : headerHeightIOS,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    overflow: "visible",
+    zIndex: 10,
   },
   upperHeader: {
     flex: 0.5,
@@ -102,5 +159,38 @@ const styles = StyleSheet.create({
     flex: 0.2,
     alignItems: "center",
     justifyContent: "center",
+  },
+  dropdownContainer: {
+    position: "absolute",
+    top: Platform.OS === "android" ? headerHeightAndroid : headerHeightIOS,
+    left: 0,
+    right: 0,
+    backgroundColor: "#F1F1F1",
+    padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+    zIndex: 100,
+    elevation: 10,
+  },
+  dropdownScroll: {
+    maxHeight: 200,
+  },
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+  },
+  notifTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  notifContent: {
+    fontSize: 14,
+    marginTop: 5,
+  },
+  notifTime: {
+    fontSize: 12,
+    marginTop: 5,
+    color: "#A8A8A8",
   },
 });

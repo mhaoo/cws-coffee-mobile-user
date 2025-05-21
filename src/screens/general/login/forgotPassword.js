@@ -191,9 +191,9 @@ export default ForgotPassword = function ({ navigation }) {
               }}
             />
 
-            <Text style={styles.titleText}>Dat lai mat khau moi</Text>
+            <Text style={styles.titleText}>Đặt lại mật khẩu mới</Text>
             <Text style={styles.subTitleText}>
-              Nhap mat khau moi cua ban de dat lai mat khau
+              Nhập mật khẩu mới của bạn để đặt lại mật khẩu
             </Text>
 
             <View

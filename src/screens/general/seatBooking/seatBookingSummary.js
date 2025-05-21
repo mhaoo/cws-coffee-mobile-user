@@ -12,69 +12,57 @@ import {
 import GeneralButton from "../../../components/button/generalButton";
 import useBookingsDetails from "../../../hooks/booking/useBookingsDetails";
 import usePayment from "../../../hooks/payment/usePayment";
-import { StripeProvider, useStripe } from "@stripe/stripe-react-native";
+import {
+  StripeProvider,
+  useStripe,
+  CardField,
+} from "@stripe/stripe-react-native";
 import { STRIPE_PUBLIC_KEY } from "@env";
 
 const { width, height } = Dimensions.get("screen");
 const stripePublicKey = STRIPE_PUBLIC_KEY;
 
-/**
- * Đây là ví dụ HARD-CODE toàn bộ thông tin thẻ và địa chỉ billing.
- * Chỉ nên dùng để demo/test, KHÔNG dùng trong môi trường sản phẩm thật.
- */
 export default function SeatBookingSummary({ route, navigation }) {
   const { bookingId } = route.params;
 
-  // 1. Lấy thông tin đặt chỗ
   const {
     data: bookingDetails,
     isLoading,
     error,
   } = useBookingsDetails(bookingId);
 
-  // 2. Lấy clientSecret qua hook usePayment
   const {
     clientSecret,
     isLoading: isPaymentLoading,
     error: paymentError,
   } = usePayment(bookingDetails?.price, bookingId);
 
-  // 3. Setup Stripe
   const { confirmPayment } = useStripe();
 
-  // 4. Hàm thanh toán hard-code toàn bộ thông tin
+  // Lưu trạng thái cardDetails
+  const [cardDetails, setCardDetails] = useState(null);
+
   const handlePayment = async () => {
     if (!clientSecret) {
       Alert.alert("Lỗi", "Không có client secret để thanh toán.");
       return;
     }
 
-    /**
-     * Các trường card: number, expMonth, expYear, cvc
-     * - Dữ liệu test: 4242 4242 4242 4242 (VISA), expMonth: 4, expYear: 24, cvc: '123'
-     * Các trường billingDetails: name, email, phone, address { line1, line2, city, state, postalCode, country }
-     */
+    if (!cardDetails?.complete) {
+      Alert.alert("Lỗi", "Vui lòng nhập đầy đủ thông tin thẻ.");
+      return;
+    }
+
     const { error, paymentIntent } = await confirmPayment(clientSecret, {
       paymentMethodType: "Card",
       paymentMethod: {
-        card: {
-          number: "4242424242424242",
-          expMonth: 4,
-          expYear: 25,
-          cvc: "123",
-        },
-      },
-      billingDetails: {
-        name: "Test User", // Tên chủ thẻ (lưu trong Card Object: name)
-        email: "test@example.com", // Email (Stripe không đưa trực tiếp vào card object, nhưng lưu trong PaymentMethod)
-        phone: "+1 555 555 5555", // Số điện thoại
-        address: {
-          line1: "123 Example St", // address_line1
-          line2: "Apt 7", // address_line2
-          city: "New York", // address_city
-          state: "NY", // address_state
-          postalCode: "10001", // address_zip
-          country: "US", // address_country
+        card: cardDetails,
+        billingDetails: {
+          name: "Test User",
+          email: "test@example.com",
+          address: {
+            country: "US",
+          },
         },
       },
     });
@@ -87,12 +75,11 @@ export default function SeatBookingSummary({ route, navigation }) {
       Alert.alert("Thanh toán thành công", "Bạn đã thanh toán thành công!");
       navigation.reset({
         index: 0,
-        routes: [{ name: "Đặt chỗ" }],
+        routes: [{ name: "Home" }],
       });
     }
   };
 
-  // 5. Loading / error
   if (isLoading || isPaymentLoading) {
     return (
       <View style={styles.centered}>
@@ -113,7 +100,6 @@ export default function SeatBookingSummary({ route, navigation }) {
     );
   }
 
-  // 6. Giao diện
   return (
     <StripeProvider publishableKey={stripePublicKey}>
       <View style={styles.container}>
@@ -165,22 +151,32 @@ export default function SeatBookingSummary({ route, navigation }) {
               />
               <Text style={styles.paymentText}>Stripe</Text>
             </View>
+
+            {/* Thêm CardField để nhập thẻ */}
+            <CardField
+              postalCodeEnabled={true}
+              placeholder={{
+                number: "4242 4242 4242 4242",
+              }}
+              cardStyle={{
+                backgroundColor: "#FFFFFF",
+                textColor: "#000000",
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "#CCCCCC",
+              }}
+              style={{
+                width: "100%",
+                height: 50,
+                marginTop: 15,
+                marginBottom: 20,
+              }}
+              onCardChange={(card) => {
+                setCardDetails(card);
+              }}
+            />
           </View>
           <View style={styles.divider} />
-
-          {/* Hiển thị thông tin cứng */}
-          <Text style={[styles.sectionTitle, { marginTop: 10 }]}>
-            Thẻ test &amp; Địa chỉ
-          </Text>
-          <Text style={styles.info}>
-            Số thẻ: 4242 4242 4242 4242 - Hết hạn: 04/24 - CVC: 123
-          </Text>
-          <Text style={styles.info}>
-            Name: Test User • Email: test@example.com • Phone: +1 555 555 5555
-          </Text>
-          <Text style={styles.info}>
-            Địa chỉ: 123 Example St, Apt 7, New York, NY, 10001, US
-          </Text>
 
           {/* Chính sách hủy chỗ */}
           <View style={styles.policySection}>

@@ -15,28 +15,25 @@ import { useCart } from "../cart/cartContext";
 
 const { width, height } = Dimensions.get("screen");
 
-export default Cart = function ({ navigation }) {
+export default Cart = function ({ navigation, route }) {
   const { cart, removeFromCart } = useCart();
+  const booking = route.params?.booking;
 
   const renderItem = ({ item }) => (
-    <View style={styles.productContainer}>
+    <View style={styles.itemRow}>
       <Image
-        source={{
-          uri: item.image || "https://example.com/image-placeholder.png",
-        }}
-        style={styles.image}
+        source={{ uri: item.image }}
+        style={styles.itemImage}
       />
-      <View style={styles.productInfo}>
-        <Text style={styles.title}>{item.name}</Text>
-        <Text style={styles.details}>
-          Options: {JSON.stringify(item.options)}
+      <View style={styles.itemInfo}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemDetails}>
+          x{item.quantity} • {item.price} VND
         </Text>
-        <Text style={styles.price}>Giá: {item.totalPrice} VND</Text>
-        <Text style={styles.quantity}>Số lượng: {item.quantity}</Text>
-        <TouchableOpacity onPress={() => removeFromCart(item.id)}>
-          <Text style={styles.deleteText}>🗑 Xóa</Text>
-        </TouchableOpacity>
       </View>
+      <TouchableOpacity onPress={() => removeFromCart(item.id)}>
+        <Text style={styles.deleteText}>Xóa</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -51,7 +48,13 @@ export default Cart = function ({ navigation }) {
         <SecondaryButton
           text="Xác nhận thanh toán"
           onPress={() => {
-            /* Handle thanh toán */
+            if (booking) {
+              navigation.navigate("BookingDetail", {
+                booking: { ...booking, items: cart },
+              });
+            } else {
+              console.warn("No booking to add to.");
+            }
           }}
         />
       </View>
@@ -64,36 +67,32 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F9F9F9",
   },
-  productContainer: {
+  itemRow: {
     flexDirection: "row",
-    padding: 10,
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    marginVertical: 4,
   },
-  image: {
-    width: 50,
-    height: 50,
-    borderRadius: 5,
+  itemImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    marginRight: 10,
   },
-  productInfo: {
+  itemInfo: {
     flex: 1,
-    marginLeft: 10,
   },
-  title: {
-    fontWeight: "bold",
+  itemName: {
     fontSize: 16,
+    fontWeight: "500",
   },
-  details: {
-    fontSize: 12,
-    color: "#777",
-  },
-  price: {
-    fontWeight: "bold",
+  itemDetails: {
     fontSize: 14,
-    color: "#333",
-  },
-  quantity: {
-    fontSize: 14,
+    color: "#555555",
+    marginTop: 2,
   },
   deleteText: {
     fontSize: 16,
@@ -102,6 +101,8 @@ const styles = StyleSheet.create({
   footerContainer: {
     flex: 0.14,
     flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     borderTopWidth: 0.25,
     borderTopColor: "#A8A8A8",
     backgroundColor: "#FFFFFF",

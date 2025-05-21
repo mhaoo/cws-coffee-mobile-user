@@ -19,9 +19,11 @@ import { useCart } from "../cart/cartContext";
 
 // Hook React Query
 import usePublicProductDetail from "../../../hooks/publicProducts/usePublicProductDetail";
+import useAddItemToOrder from "../../../hooks/order/useAddItemToOrder";
 
 export default function ProductDetail({ route, navigation }) {
-  const { productId } = route.params;
+  // Extract booking context for adding to order
+  const { productId, booking, orderId } = route.params || {};
 
   // Gọi hook React Query, không bọc trong if
   const { data: product, isLoading, error } = usePublicProductDetail(productId);
@@ -31,7 +33,9 @@ export default function ProductDetail({ route, navigation }) {
   const [selectedOptions, setSelectedOptions] = useState({});
   const [totalPrice, setTotalPrice] = useState(0);
 
+  // Cart and order mutations
   const { addToCart } = useCart();
+  const addItemMutation = useAddItemToOrder();
 
   // Loading
   if (isLoading) {
@@ -97,16 +101,31 @@ export default function ProductDetail({ route, navigation }) {
 
   // Add To Cart
   const handleAddToCart = () => {
-    const cartItem = {
-      id: product.id,
+    // Prepare item payload for add-to-order or cart
+    const itemPayload = {
+      productId: product.id,
       name: product.name,
-      price: totalPrice,
-      quantity: countAmountProduct,
-      options: selectedOptions,
-      notes,
+      price: product.productPrice,
+      image: product.images?.[0],
     };
-    addToCart(cartItem);
-    navigation.goBack();
+    if (booking) {
+      // Add to existing order via API
+      addItemMutation.mutate(
+        { bookingId: booking.id, item: itemPayload },
+        {
+          onSuccess: () => {
+            navigation.navigate("BookingDetail", { booking });
+          },
+          onError: () => {
+            console.log(error);
+          },
+        }
+      );
+    } else {
+      // Fallback to cart context for standalone usage
+      addToCart(itemPayload);
+      navigation.goBack();
+    }
   };
 
   // Render UI
@@ -124,11 +143,30 @@ export default function ProductDetail({ route, navigation }) {
           />
           <Text style={styles.productTitle}>{product.name}</Text>
           <Text style={styles.productPrice}>
-            {product.price ? `$${product.price}` : "$0.00"}
+            {product.price != null
+              ? `${product.price.toLocaleString("vi-VN")} VNĐ`
+              : "0 VNĐ"}
           </Text>
           <Text style={styles.productDescription}>
             {product.description || "Không có mô tả cho sản phẩm này"}
           </Text>
+          {/* Additional details */}
+          {/* <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Danh mục:</Text>
+            <Text style={styles.detailValue}>{product.categoryName}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Nhóm:</Text>
+            <Text style={styles.detailValue}>{product.groupName}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Kích thước:</Text>
+            <Text style={styles.detailValue}>{product.size}</Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Tồn kho:</Text>
+            <Text style={styles.detailValue}>{product.inventories}</Text>
+          </View> */}
         </View>
 
         {/* Options nếu product.customizable */}
@@ -162,28 +200,23 @@ export default function ProductDetail({ route, navigation }) {
 
       {/* Footer */}
       <View style={styles.footerContainer}>
-        <View style={styles.addAmountProductContainer}>
+        <View style={styles.addAmountContainer}>
           <AddButton iconName="remove-outline" onPress={handleRemovePress} />
-          <Text style={styles.countAmountProductText}>
-            {countAmountProduct}
-          </Text>
+          <Text style={styles.countAmountText}>{countAmountProduct}</Text>
           <AddButton iconName="add" onPress={handleAddPress} />
         </View>
-        <View style={styles.secondaryButtonContainer}>
-          <SecondaryButton
-            text="Chọn"
-            price={`${totalPrice.toFixed(2)} đ`}
-            style={styles.secondaryButton}
-            onPress={handleAddToCart}
-          />
-        </View>
+        <SecondaryButton
+          text="Chọn"
+          price={`${product.price.toLocaleString("vi-VN")} VNĐ`}
+          style={styles.chooseButton}
+          onPress={handleAddToCart}
+        />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // Giữ style như bạn đã code
   container: {
     flex: 1,
     backgroundColor: "#F9F9F9",
@@ -193,25 +226,27 @@ const styles = StyleSheet.create({
   },
   footerContainer: {
     flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     borderTopWidth: 0.25,
     borderTopColor: "#A8A8A8",
     backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
-  addAmountProductContainer: {
+  addAmountContainer: {
     flexDirection: "row",
-    justifyContent: "center",
-    paddingTop: 35,
-  },
-  countAmountProductText: {
-    fontSize: 14,
-    fontWeight: "600",
-    paddingTop: 5,
-    marginHorizontal: 20,
-    color: "#000000",
-  },
-  secondaryButtonContainer: {
     alignItems: "center",
-    paddingTop: PixelRatio.getPixelSizeForLayoutSize(8),
+  },
+  countAmountText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginHorizontal: 12,
+    color: "#000",
+  },
+  chooseButton: {
+    height: 40,
+    borderRadius: 8,
   },
   productContainer: {
     alignItems: "center",
@@ -267,5 +302,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  detailRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 4,
+    paddingHorizontal: 16,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: "#555",
+  },
+  detailValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
   },
 });

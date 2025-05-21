@@ -20,6 +20,7 @@ import seatBookingSummary from "../../screens/general/seatBooking/seatBookingSum
 import ForumScreen from "../../screens/general/others/forumScreen";
 import NewPostScreen from "../../screens/general/others/newPostScreen";
 import CommentScreen from "../../screens/general/others/commentScreen";
+import BookingDetail from "../../screens/bottom-tab/bookingDetail";
 
 const Stack = createStackNavigator();
 
@@ -67,8 +68,8 @@ const StackNavigator = () => {
         name="SeatList"
         component={seatList}
         options={{
-          header: ({ navigation }) => (
-            <SeatListHeader navigation={navigation} />
+          header: ({ navigation, route }) => (
+            <SeatListHeader navigation={navigation} route={route} />
           ),
         }}
       />
@@ -149,6 +150,15 @@ const StackNavigator = () => {
         options={{
           header: ({ navigation, route }) => (
             <BasicHeader navigation={navigation} route={route} />
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="BookingDetail"
+        component={BookingDetail}
+        options={{
+          header: ({ navigation, route }) => (
+            <BasicHeader navigation={navigation} route={route} title="Chi tiết đặt chỗ" />
           ),
         }}
       />
